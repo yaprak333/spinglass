@@ -23,6 +23,7 @@ def sweep(S_current, J_arr, beta):
             S_current[i, j] *= -1
 
     return S_current
+    
 @jit(nopython=True)
 def cluster_flip_wolf(S, J_arr, beta):
     N = len(S)
@@ -70,6 +71,7 @@ def cluster_flip_wolf(S, J_arr, beta):
                 S[i,j] *= -1
 
     return S
+    
 @jit(nopython=True)
 def cluster_flip_sw(S,J_arr,beta):
     clusters = find_clusters(get_fkck_single(S,J_arr,beta))
@@ -82,6 +84,7 @@ def cluster_flip_sw(S,J_arr,beta):
                         S1[i, j] *= -1
                         S2[i, j] *= -1  
     return S1,S2
+    
 @jit(nopython=True)
 def cluster_flip_houdayer_sw(S1,S2):
     N = len(S1)
@@ -95,6 +98,7 @@ def cluster_flip_houdayer_sw(S1,S2):
                         S1[i, j] *= -1
                         S2[i, j] *= -1  
     return S1,S2
+    
 @jit(nopython=True)
 def cluster_flip_jorg_sw(S1,S2,J_arr,beta):
     N = len(S1)
@@ -108,6 +112,7 @@ def cluster_flip_jorg_sw(S1,S2,J_arr,beta):
                         S1[i, j] *= -1
                         S2[i, j] *= -1   
     return S1, S2
+    
 @jit(nopython=True)
 def cluster_flip_cmrj_sw(S1,S2,J_arr,beta):
     edges = get_cmrj(S1,S2,J_arr,beta)
@@ -132,6 +137,7 @@ def cluster_flip_cmrj_sw(S1,S2,J_arr,beta):
                         S2[i, j] *= -1
 
     return S1, S2
+    
 @jit(nopython=True)
 def exchange_mc(S_arr, beta_arr, J_arr):
     N = len(beta_arr)
@@ -183,6 +189,7 @@ def get_fkck_single(S,J_arr, beta,PBC=True):
                 if sxsy_v * J_arr[i, j, 1] > 0 and np.random.random() < 1 - np.exp(-2 * beta * abs(J_arr[i, j, 1])):
                     connection[i, j, 1] = True
     return connection
+    
 @jit(nopython=True)
 def get_fkck(S1, S2, J_arr, beta,PBC=True):
     N = len(S1)
@@ -214,6 +221,7 @@ def get_fkck(S1, S2, J_arr, beta,PBC=True):
                     connection[i, j, 1] = True 
     
     return connection
+    
 @jit(nopython=True)
 def get_cmrj(S1, S2, J_arr, beta, PBC=True):
     N = len(S1)
@@ -288,6 +296,7 @@ def get_houdayer(S1, S2,PBC=True):
                 if abs(S1[i, j] * S1[i, (j + 1)%N] + S2[i, j] * S2[i, (j + 1)%N]) == 2:
                     connection[i, j, 1] = True
     return connection
+    
 @jit(nopython=True)
 def get_jorg(S1, S2, J_arr, beta,PBC=True):
     N = len(S1)
@@ -351,6 +360,7 @@ def dfs(i, j, edges, visited, cluster_id, cluster_array, N):
         # Check up neighbor
         if edges[pi_v, pj_v, 1] and not visited[pi_v, pj_v]:
             stack.append((pi_v, pj_v))
+            
 @jit(nopython=True)
 def find_clusters(edges):
     N = edges.shape[0]
@@ -365,6 +375,7 @@ def find_clusters(edges):
                 cluster_id += 1  # Increment cluster ID
 
     return cluster_array
+    
 @jit(nopython=True)
 def find_cluster_sizes(cluster_matrix):
     """
@@ -396,6 +407,7 @@ def find_cluster_sizes(cluster_matrix):
     
     # Convert list to numpy array for return
     return np.array(largest_sizes, dtype=np.float32)
+    
 @jit(nopython=True)
 def contains_spanning_cluster(cluster_matrix):
     N = cluster_matrix.shape[0]
@@ -437,6 +449,7 @@ def total_energy(S,J_arr):
         for j in range(N):
             energy -= (S[i,j]*S[(i+1)%N,j]*J_arr[i,j,0] + S[i,j]*S[i,(j+1)%N]*J_arr[i,j,1])
     return energy
+    
 @jit(nopython=True)
 def get_ql(S1,S2):
     ql = 0
@@ -456,13 +469,13 @@ def get_new_beta(beta_arr,e_arr):
     while ind < len(beta_arr)-1:
         for i in range(ind+1,len(beta_arr)):
             check = np.exp((beta_arr[i]-beta_arr[ind])*(e_arr[i]-e_arr[ind]))
-            #print(check)
             if 0.4< check and check < 0.5:
                 ind = i
                 beta_new.append(beta_arr[ind])
                 continue
         break
     return beta_new
+    
 @jit(nopython=True)
 def get_new_beta_opt(beta_arr):
     N = len(beta_arr)
@@ -490,10 +503,10 @@ def get_sizes_and_R_fkck(numSweeps,num_ave,beta_arr,N):
     for j in range(numSweeps):
         for i in range(len(beta_arr)):
             #Sarr1[i],Sarr2[i] = cluster_flip_fkck_wolf(Sarr1[i],Sarr2[i],J_arr,beta_arr[i])
-            if j % 100 ==1:
+            if j % 2 ==1:
             #Sarr1[i],Sarr2[i] = cluster_flip_houdayer_sw(Sarr1[i],Sarr2[i],J_arr,beta_arr[i])
                 Sarr1[i],Sarr2[i] = cluster_flip_jorg_sw(Sarr1[i],Sarr2[i],J_arr,beta_arr[i])
-            elif j % 100 == 51: 
+            else: 
                 Sarr1[i],Sarr2[i] = cluster_flip_houdayer_sw(Sarr1[i],Sarr2[i])
             #
             Sarr1[i] = sweep(Sarr1[i],J_arr,beta_arr[i])
@@ -533,21 +546,14 @@ def get_sizes_and_R_single(numSweeps,num_ave,beta_arr,N):
             Sarr2[i] = sweep(Sarr2[i],J_arr,beta_arr[i])
             Sarr1[i] = cluster_flip_wolf(Sarr1[i],J_arr,beta_arr[i])
             Sarr2[i] = cluster_flip_wolf(Sarr2[i],J_arr,beta_arr[i])
-            #if j > numSweeps * 0.5:
-            #Sarr1[i] = cluster_flip_wolf(Sarr1[i],J_arr,beta_arr[i])
-            #Sarr2[i] = cluster_flip_wolf(Sarr2[i],J_arr,beta_arr[i])
-            #Sarr1[i],Sarr2[i] = cluster_flip_fkck_wolf(Sarr1[i],Sarr2[i],J_arr,beta_arr[i])
             if j % 2 == 1:
-            #    Sarr1[i],Sarr2[i] = cluster_flip_houdayer_sw(Sarr1[i],Sarr2[i])
                 Sarr1[i],Sarr2[i] = cluster_flip_jorg_sw(Sarr1[i],Sarr2[i],J_arr,beta_arr[i])
             else: 
                 Sarr1[i],Sarr2[i] = cluster_flip_houdayer_sw(Sarr1[i],Sarr2[i])
-                #
 
             
             if j > numSweeps - num_ave:
                 # Calculate Spanning Probability
-                #clusters2 = find_clusters(get_fkck_single(Sarr1[i],J_arr,beta_arr[i],False))
                 R_list1[i] += contains_spanning_cluster(find_clusters(get_fkck_single(Sarr1[i],J_arr,beta_arr[i],False)))/num_ave
                 size1[i] += find_cluster_sizes(find_clusters(get_fkck_single(Sarr1[i],J_arr,beta_arr[i],True)))[0]/num_ave/N**2
                 R_list2[i] += contains_spanning_cluster(find_clusters(get_fkck_single(Sarr2[i],J_arr,beta_arr[i],False)))/num_ave
@@ -579,14 +585,8 @@ def get_sizes_and_R_houdayer(numSweeps,num_ave,beta_arr,N):
             Sarr2[i] = sweep(Sarr2[i],J_arr,beta_arr[i])
             Sarr1[i] = cluster_flip_wolf(Sarr1[i],J_arr,beta_arr[i])
             Sarr2[i] = cluster_flip_wolf(Sarr2[i],J_arr,beta_arr[i])
-            #if j > numSweeps * 0.5:
-            #Sarr1[i] = cluster_flip_wolf(Sarr1[i],J_arr,beta_arr[i])
-            #Sarr2[i] = cluster_flip_wolf(Sarr2[i],J_arr,beta_arr[i])
-            #Sarr1[i],Sarr2[i] = cluster_flip_fkck_wolf(Sarr1[i],Sarr2[i],J_arr,beta_arr[i])
             if j % 2 == 1:
                 Sarr1[i],Sarr2[i] = cluster_flip_houdayer_sw(Sarr1[i],Sarr2[i])
-            #    Sarr1[i],Sarr2[i] = cluster_flip_jorg_sw(Sarr1[i],Sarr2[i],J_arr,beta_arr[i])
-            #    Sarr1[i],Sarr2[i] = cluster_flip_houdayer_sw(Sarr1[i],Sarr2[i])
             else: 
                 Sarr1[i],Sarr2[i] = cluster_flip_jorg_sw(Sarr1[i],Sarr2[i],J_arr,beta_arr[i])
             if j > numSweeps - num_ave:
@@ -598,7 +598,6 @@ def get_sizes_and_R_houdayer(numSweeps,num_ave,beta_arr,N):
                     sizes_list[i,k] += sizes[k]/num_ave/N**2
                 e_arr1[i] += total_energy(Sarr1[i],J_arr)/num_ave/N**2
                 e_arr2[i] += get_ql(Sarr1[i],Sarr2[i])/num_ave
-                #R_list[i] += (np.abs(np.sum(Sarr1[i]))+np.abs(np.sum(Sarr2[i])))/2/num_ave/N**2
         Sarr1=exchange_mc(Sarr1,beta_arr,J_arr)
         Sarr2=exchange_mc(Sarr2,beta_arr,J_arr)
                 

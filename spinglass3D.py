@@ -523,23 +523,17 @@ def contains_spanning_cluster(cluster_matrix):
     # Collect IDs from the boundaries, excluding 0
     for i in range(N):
         left_id = cluster_matrix[i, 0, 0]
-        if left_id != 0:
-            left_ids.add(left_id)
+        left_ids.add(left_id)
         right_id = cluster_matrix[i, N-1, 0]
-        if right_id != 0:
-            right_ids.add(right_id)
+        right_ids.add(right_id)
         top_id = cluster_matrix[0, i, 0]
-        if top_id != 0:
-            top_ids.add(top_id)
+        top_ids.add(top_id)
         bottom_id = cluster_matrix[N-1, i, 0]
-        if bottom_id != 0:
-            bottom_ids.add(bottom_id)
+        bottom_ids.add(bottom_id)
         front_id = cluster_matrix[0, 0, i]
-        if front_id != 0:
-            front_ids.add(front_id)
+        front_ids.add(front_id)
         back_id = cluster_matrix[N-1, 0, i]
-        if back_id != 0:
-            back_ids.add(back_id)
+        back_ids.add(back_id)
     
     # Check for intersection in vertical spanning
     if left_ids.intersection(right_ids):
